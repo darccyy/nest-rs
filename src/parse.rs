@@ -1,7 +1,7 @@
 use crate::Nest::{self, End, More};
 
 pub fn parse(text: &str) -> Result<Nest<String>, String> {
-    Ok(Nest::More(parse_component(text, 0)?.0))
+    Ok(More(parse_component(text, 0)?.0))
 }
 
 fn parse_component(text: &str, iter: usize) -> Result<(Vec<Nest<String>>, usize), String> {
@@ -55,38 +55,29 @@ fn parse_component(text: &str, iter: usize) -> Result<(Vec<Nest<String>>, usize)
     Ok((list, 0))
 }
 
-fn _highlight(ch: char) -> String {
-    format!(
-        "\x1b[32{}\x1b[0m",
-        match ch {
-            ' ' => ";2m•".to_string(),
-            '\n' => ";33m•".to_string(),
-            ',' => ";34m,".to_string(),
-            '[' => ";35m,".to_string(),
-            ']' => ";36m,".to_string(),
-            _ => format!("m{}", ch),
-        }
-    )
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn parse_works() {
-        let text = "[[a, [b], c], [], d]";
-        let (nest, _) = parse_component(text, 0).unwrap();
+        assert_eq!(format!("{:?}", parse("a, b").unwrap()), r#"["a", "b"]"#);
+
+        assert_eq!(format!("{:?}", parse("[a, b]").unwrap()), r#"[["a", "b"]]"#);
+
         assert_eq!(
-            format!("{:?}", nest.first().unwrap()),
+            format!("{:?}", parse("[a, [b], c], [], d").unwrap()),
             r#"[["a", ["b"], "c"], [], "d"]"#
         );
 
-        let text = "a, b";
-        let (nest, _) = parse_component(text, 0).unwrap();
         assert_eq!(
-            format!("{:?}", nest.first().unwrap()),
-            r#"[["a", ["b"], "c"], [], "d"]"#
+            format!(
+                "{:?}",
+                parse("4, 9, 10, 0")
+                    .unwrap()
+                    .map(&|x| x.parse::<i32>().unwrap())
+            ),
+            "[4, 9, 10, 0]"
         );
     }
 }

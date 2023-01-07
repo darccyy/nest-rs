@@ -1,8 +1,10 @@
+mod map;
 mod parse;
+
+pub use parse::parse;
 
 use std::fmt;
 
-pub use parse::parse;
 use Nest::{End, More};
 
 pub enum Nest<T> {
