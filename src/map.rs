@@ -27,10 +27,10 @@ impl<T> Nest<T> {
             Item(item) => Item(f(item)),
 
             // Recurse
-            List(vec) => {
+            List(list) => {
                 // This could be an `Iter` map, instead of a for loop
                 let mut new = vec![];
-                for item in vec {
+                for item in list {
                     new.push(item.map(f))
                 }
                 List(new)
