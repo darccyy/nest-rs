@@ -1,3 +1,8 @@
+# Recursive Vector Nesting Example
+
+Just an example
+
+```rs
 use nest::{parse, Nest};
 
 fn main() {
@@ -12,5 +17,9 @@ fn main() {
     );
 
     let ints: Nest<i32> = strings.map(&|x| x.parse().unwrap());
-    assert_eq!(format!("{:?}", ints), "[1, [2, [3]], [4, 5]]");
+    assert_eq!(
+      format!("{:?}", ints),
+      "[1, [2, [3]], [4, 5]]"
+    );
 }
+```
