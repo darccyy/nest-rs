@@ -1,4 +1,4 @@
-use crate::Nest::{self, End, More};
+use crate::Nest::{self, Item, List};
 
 /// Parse `Nest` recursively from string
 ///
@@ -6,24 +6,28 @@ use crate::Nest::{self, End, More};
 ///
 /// Lists are delimited by square brackets `[` and `]`, and items are separated by commas `,`
 ///
-/// # Example
+/// # Examples
 ///
-/// ```rs
-/// let text = "1, [2, [3]], [4, 5]";
+/// ```
+/// # use nest::{parse, Nest};
+/// let text = "a, [b, [c]], [d, e]";
 ///
+/// // Parse with items as strings
 /// let strings: Nest<String> = parse(text).unwrap();
 ///
 /// assert_eq!(
 ///   format!("{:?}", strings),
-///   r#"["1", ["2", ["3"]], ["4", "5"]]"#
+///   r#"["a", ["b", ["c"]], ["d", "e"]]"#
 /// );
 /// ```
 pub fn parse(text: &str) -> Result<Nest<String>, ()> {
-    Ok(More(parse_component(text, 0)?.0))
+    Ok(List(parse_component(text, 0)?.0))
 }
 
 /// Parse single component (branch) of `Nest` from slice of original string
 ///
+/// No error handling!
+/// 
 /// `depth` is an arbitrary limit of recursion
 fn parse_component(text: &str, depth: usize) -> Result<(Vec<Nest<String>>, usize), ()> {
     // Check depth limit
@@ -45,7 +49,7 @@ fn parse_component(text: &str, depth: usize) -> Result<(Vec<Nest<String>>, usize
             ',' => {
                 // Add current item to list, reset item
                 if !item_building.is_empty() {
-                    list.push(End(item_building));
+                    list.push(Item(item_building));
                     item_building = String::new();
                 }
             }
@@ -64,7 +68,7 @@ fn parse_component(text: &str, depth: usize) -> Result<(Vec<Nest<String>>, usize
                 let (item_branch, increase_index) = parse_component(&rest, depth + 1)?;
 
                 // Add new branch to list
-                list.push(More(item_branch));
+                list.push(List(item_branch));
 
                 // Increase index of loop
                 chars.nth(increase_index);
@@ -75,7 +79,7 @@ fn parse_component(text: &str, depth: usize) -> Result<(Vec<Nest<String>>, usize
             ']' => {
                 // Add final item to list
                 if !item_building.is_empty() {
-                    list.push(End(item_building));
+                    list.push(Item(item_building));
                 }
 
                 // Return current list as item branch, and current index of iterated string slice
@@ -89,7 +93,7 @@ fn parse_component(text: &str, depth: usize) -> Result<(Vec<Nest<String>>, usize
 
     // Add final item to list
     if !item_building.is_empty() {
-        list.push(End(item_building));
+        list.push(Item(item_building));
     }
 
     // Return final list, and dummy index

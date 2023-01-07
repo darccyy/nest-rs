@@ -5,21 +5,27 @@ pub use parse::parse;
 
 use std::fmt;
 
-use Nest::{End, More};
+use Nest::{Item, List};
 
+/// Nested list
+///
+/// Generic type `T` must have `Sized` trait to use `map` method
 pub enum Nest<T> {
-    End(T),
-    More(Vec<Nest<T>>),
+    /// Single item
+    Item(T),
+    /// New list
+    List(Vec<Nest<T>>),
 }
 
+// Custom debug implementation, removes `Item(...)` and `List(...)` syntax
 impl<T> fmt::Debug for Nest<T>
 where
     T: fmt::Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            End(x) => write!(f, "{:?}", x),
-            More(x) => write!(f, "{:?}", x),
+            Item(x) => write!(f, "{:?}", x),
+            List(x) => write!(f, "{:?}", x),
         }
     }
 }
@@ -30,10 +36,11 @@ mod tests {
 
     #[test]
     fn nest_works() {
-        let nest = More(vec![
-            More(vec![End(1), More(vec![End(2)]), End(3)]),
-            More(vec![]),
-            End(4),
+        // Explicitly typed - not parsed
+        let nest = List(vec![
+            List(vec![Item(1), List(vec![Item(2)]), Item(3)]),
+            List(vec![]),
+            Item(4),
         ]);
 
         assert_eq!(format!("{:?}", nest), "[[1, [2], 3], [], 4]");
